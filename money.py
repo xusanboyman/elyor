@@ -53,7 +53,14 @@ async def check(query: CallbackQuery):
     for CHANNEL_ID in CHANNEL_IDs:
         chat_member = await bot.get_chat_member(chat_id=CHANNEL_ID, user_id=user_id)
         if chat_member.status not in ['member', 'administrator', 'creator']:
-            await query.message.answer("Please join the channel first.", reply_markup=channels)
+            async def not_joined_channels():
+                buttons = []
+                chat = await bot.get_chat(CHANNEL_ID)
+                buttons.append([InlineKeyboardButton(text=f"Join our Channel {chat.title}",url=f"https://t.me/{chat.username or CHANNEL_ID}")])
+                buttons.append([InlineKeyboardButton(text="✅ Tekshirish", callback_data='check')])
+                return InlineKeyboardMarkup(inline_keyboard=buttons)
+            not_joined_channel = await not_joined_channels()
+            await query.message.answer("Please join the channel first.", reply_markup=not_joined_channel)
             return
         else:
             n += 1
@@ -80,9 +87,18 @@ class TestMiddleware(BaseMiddleware):
             for CHANNEL_ID in CHANNEL_IDs:
                 chat_member = await bot.get_chat_member(chat_id=CHANNEL_ID, user_id=user_id)
 
+                async def not_joined_channels():
+                    buttons = []
+                    chat = await bot.get_chat(CHANNEL_ID)
+                    buttons.append([InlineKeyboardButton(text=f"Join our Channel {chat.title}",
+                                                         url=f"https://t.me/{chat.username or CHANNEL_ID}")])
+                    buttons.append([InlineKeyboardButton(text="✅ Tekshirish", callback_data='check')])
+                    return InlineKeyboardMarkup(inline_keyboard=buttons)
+
+                not_joined_channel = await not_joined_channels()
                 if chat_member.status in ['left', 'kicked']:
                     await bot.delete_message(chat_id=event.message.chat.id, message_id=event.message_id-1)
-                    await event.answer("Please join the channels first.", reply_markup=channels)
+                    await event.answer("Please join the channels first.", reply_markup=not_joined_channel)
                     raise CancelHandler()
 
         result = await handler(event, data)
@@ -98,7 +114,7 @@ async def main():
 
 if __name__ == "__main__":
     try:
-        keep_alive()
+        # keep_alive()
         print('working')
         asyncio.run(main())
     except KeyboardInterrupt:
