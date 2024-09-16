@@ -7,7 +7,7 @@ from aiogram import BaseMiddleware
 from typing import Callable, Dict, Any, Awaitable
 from aiogram.dispatcher.event.bases import TelegramObject, CancelHandler
 from aiogram.types import FSInputFile
-
+from keep_alive import keep_alive
 
 # Bot initialization
 bot = Bot(token='6778014003:AAHsZzEKJ7hFWeBy5f6_ZCjptMUbAOpvlew')
@@ -98,6 +98,7 @@ async def main():
 
 if __name__ == "__main__":
     try:
+        keep_alive()
         print('working')
         asyncio.run(main())
     except KeyboardInterrupt:
